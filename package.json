@@ -6,7 +6,8 @@
     "typecheck": "tsc --noEmit",
     "render:smoke": "remotion render src/index.tsx PocketEclipse out/pocket-eclipse.mp4 --codec=h264 --gl=swangle --concurrency=2",
     "render:kite": "remotion render src/index.tsx LayangLayangPulang out/kite/picture.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p --gl=swangle --concurrency=2 --timeout=120000",
-    "render:kite:continuity": "remotion render src/index.tsx LayangLayangPulang15 out/kite-continuity/picture.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p --gl=swangle --concurrency=2 --timeout=120000"
+    "render:kite:continuity": "remotion render src/index.tsx LayangLayangPulang15 out/kite-continuity/picture.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p --gl=swangle --concurrency=2 --timeout=120000",
+    "render:kite:smoke": "bash scripts/render-kite-smoke.sh"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

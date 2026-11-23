@@ -18,3 +18,8 @@ __pycache__/
 /work/
 remotion-webpack-bundle-*/
 puppeteer_dev_chrome_profile-*/
+venv/
+.pytest_cache/
+.mypy_cache/
+/temp/
+/samples/*.mp4

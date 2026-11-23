@@ -28,7 +28,7 @@ npm run typecheck
 npm run studio
 ```
 
-Studio lists `BridgeShort` and `PocketEclipse`. The runtime uses the bridge scene modules directly from `templates/bridge/` and adds its canvas startup handling in `src/`. The original templates, audio tools, and skill are available in their original locations.
+Studio lists `BridgeShort`, `PocketEclipse`, `LayangLayangPulang`, and `LayangLayangPulang15`. The runtime uses the bridge scene modules directly from `templates/bridge/` and adds its canvas startup handling in `src/`. The original templates, audio tools, and skill are available in their original locations.
 
 Render the five-second, 540 × 960 `PocketEclipse` smoke test:
 
@@ -103,6 +103,24 @@ ffmpeg -i out/kite-continuity/picture.mp4 -i out/kite-continuity/audio/mix.wav \
 ```
 
 This render uses 540 × 960 at 30 fps and SwiftShader. The soundtrack uses local eSpeak NG with the Indonesian voice and a synthesized score, footsteps, gusts and reel sounds. Browser and eSpeak override options are the same as for the 10-second version.
+
+### Quick render with character movement and narration
+
+On Linux or Codex Cloud, have Node.js 24/npm, Bash, Python 3.12 with `venv`, FFmpeg/ffprobe, and eSpeak NG with its Indonesian (`id`) voice. Use installed Chromium when browser downloads are restricted. From a fresh checkout:
+
+```sh
+npm ci
+npm run typecheck
+python3 -m venv .venv
+.venv/bin/python -m pip install -r src/videos/kite/requirements.txt
+PYTHON=.venv/bin/python BROWSER_EXECUTABLE=/usr/bin/chromium npm run render:kite:smoke
+```
+
+This writes `out/kite-smoke/layang-layang-pulang-smoke.mp4`, a 45-frame clip from the 15-second story with the matching stereo soundtrack. Omit `BROWSER_EXECUTABLE` to use Remotion's packaged browser. For a user-local eSpeak NG installation, set `ESPEAK_NG` to the binary and `ESPEAK_DATA_PARENT` to the directory containing `espeak-ng-data`. Generated media and local dependencies stay in ignored directories.
+
+### Make a new story
+
+Use `SKILL.md` for the production workflow. Start a new composition in `src/index.tsx`, reusing the first-frame-safe canvas in `src/ReadyThreeCanvas.tsx`. The kite story shows how to author a camera and action timeline, stage flat character drawings in a lit 3D street, and align narration, score, and effects. Its shot timing is in `src/videos/kite/continuity/story.ts`, and its sound cues are in `src/videos/kite/sound.py`. The upstream `templates/bridge/`, `templates/audio/`, and `templates/scripts/` provide the shared illustration, shading, synthesis, and QA code. The rendered kite story and Pocket Eclipse use procedural assets. The original bridge composition can also use separately supplied Kenney GLB scenery, as described above.
 
 ## Install
 1. Copy this folder to `~/.claude/skills/cartoon-3d-short/` (clone it there, or download the ZIP).
