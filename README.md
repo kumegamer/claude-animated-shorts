@@ -76,6 +76,34 @@ ffmpeg -i out/kite/picture.mp4 -i out/kite/audio/mix.wav \
 
 The sound script uses the bridge template's instrument and effects synthesizers with an original score and synchronized cues. It accepts `--espeak` and `--voice-data-parent` for a user-local eSpeak NG installation, or `--no-voice` for music and effects alone.
 
+### 15-second continuity edit
+
+The `LayangLayangPulang15` composition shares the painted street, light rig, character face library and post effects with the original. The original 10-second composition keeps its own story and audio settings.
+
+| Time | Shot | Action |
+| --- | --- | --- |
+| 0:00–0:02.80 | Wide establishing | Nara walks through the street and flies the kite. |
+| 0:02.80–0:07.70 | Character tracking | The gust pulls the reel loose. Nara runs after it and Bu Mira catches it. |
+| 0:07.70–0:10.80 | Handoff close-up | Nara relaxes and takes the reel back from Bu Mira. |
+| 0:10.80–0:15.00 | Final two-shot | The kite rises under tension while both watch. |
+
+The new gait fixes each stance foot's horizontal position until the next swing. Walking and running differ in stance time, lift, arm swing and lean. The reel follows the drawn grip or its free-flight path. The kite uses a fixed 120 Hz damped simulation with gusts and a maximum tether length. Wind also moves the street pennants.
+
+Use the same dependencies as the 10-second version:
+
+```sh
+npm ci
+npm run typecheck
+npm run render:kite:continuity
+python -m pip install -r src/videos/kite/requirements.txt
+python src/videos/kite/sound.py out/kite-continuity/audio --continuity
+ffmpeg -i out/kite-continuity/picture.mp4 -i out/kite-continuity/audio/mix.wav \
+  -map 0:v:0 -map 1:a:0 -c:v copy -c:a aac -b:a 192k -movflags +faststart \
+  out/kite-continuity/layang-layang-pulang-15s.mp4
+```
+
+This render uses 540 × 960 at 30 fps and SwiftShader. The soundtrack uses local eSpeak NG with the Indonesian voice and a synthesized score, footsteps, gusts and reel sounds. Browser and eSpeak override options are the same as for the 10-second version.
+
 ## Install
 1. Copy this folder to `~/.claude/skills/cartoon-3d-short/` (clone it there, or download the ZIP).
 2. You need [Remotion](https://www.remotion.dev/) with `@remotion/three`, plus Node, Python 3 and ffmpeg.

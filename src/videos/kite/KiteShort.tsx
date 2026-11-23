@@ -11,6 +11,9 @@ import { LensBlur } from "../../../templates/bridge/lensblur";
 import { kiteStory } from "./story";
 import { makeStreet, streetPalettes } from "./Street";
 import { Kite, Players } from "./Players";
+import { ContinuityCharacters } from "./continuity/Characters";
+import { KiteRig } from "./continuity/KiteRig";
+import { cameraAt, FPS, windAt } from "./continuity/story";
 
 const PrimeComposer = ({ onReady }: { onReady: () => void }) => {
   const { isRendering } = useRemotionEnvironment();
@@ -23,13 +26,16 @@ const PrimeComposer = ({ onReady }: { onReady: () => void }) => {
   return null;
 };
 
-const Scene = ({ onReady }: { onReady: () => void }) => {
+type Edition = "preview" | "continuity";
+
+const Scene = ({ onReady, edition }: { onReady: () => void; edition: Edition }) => {
   const frame = useCurrentFrame();
   const { camera, scene } = useThree();
   const cam = camera as THREE.PerspectiveCamera;
   const street = useMemo(makeStreet, []);
-  const players = useMemo(() => new Players(), []);
-  const kite = useMemo(() => new Kite(), []);
+  const cast = useMemo(() => edition === "continuity"
+    ? { edition, players: new ContinuityCharacters(), kite: new KiteRig() } as const
+    : { edition, players: new Players(), kite: new Kite() } as const, [edition]);
   const post = useMemo(() => ({
     ink: new InkPass(scene, cam, { color: "#271c29", widthNear: 4.4, widthFar: 2.5, strength: .9 }),
     lens: new LensBlur({ maxCoC: 18 }),
@@ -47,29 +53,47 @@ const Scene = ({ onReady }: { onReady: () => void }) => {
     light.shadow.normalBias = .025;
     return light;
   }, []);
-  const beat = kiteStory(frame);
-  cam.position.set(...beat.camera);
-  cam.lookAt(...beat.aim);
-  cam.rotateZ(beat.roll);
-  cam.updateMatrixWorld();
   scene.background = street.sky;
   scene.fog = street.fog;
   streetPalettes();
-  players.pose(beat, cam);
-  kite.pose(beat);
+  let time: number;
+  let focus: THREE.Vector3;
+  let wind = 1;
+  if (cast.edition === "continuity") {
+    time = frame / FPS;
+    const shot = cameraAt(time);
+    cam.position.set(...shot.pos);
+    cam.lookAt(...shot.aim);
+    cam.rotateZ(shot.roll);
+    cam.updateMatrixWorld();
+    const hand = cast.players.pose(frame, time, cam);
+    cast.kite.pose(frame, time, hand, cam);
+    focus = new THREE.Vector3(...shot.focus);
+    post.lens.cInf = shot.dof;
+    wind = 1 + windAt(time) * .52;
+  } else {
+    const beat = kiteStory(frame);
+    time = beat.time;
+    cam.position.set(...beat.camera);
+    cam.lookAt(...beat.aim);
+    cam.rotateZ(beat.roll);
+    cam.updateMatrixWorld();
+    cast.players.pose(beat, cam);
+    cast.kite.pose(beat);
+    focus = new THREE.Vector3(...beat.aim);
+    post.lens.cInf = 16;
+  }
   street.flags.forEach((flag, i) => {
-    flag.rotation.x = .32 * Math.sin(beat.time * 6.1 + i * .61);
-    flag.rotation.z = .10 * Math.sin(beat.time * 4.4 + i);
+    flag.rotation.x = .32 * wind * Math.sin(time * 6.1 + i * .61);
+    flag.rotation.z = .10 * wind * Math.sin(time * 4.4 + i);
   });
-  const focus = new THREE.Vector3(...beat.aim).sub(cam.position);
-  post.lens.focus = focus.dot(cam.getWorldDirection(new THREE.Vector3()));
-  post.lens.cInf = 16;
+  post.lens.focus = focus.sub(cam.position).dot(cam.getWorldDirection(new THREE.Vector3()));
 
   return (
     <>
       <primitive object={street.root} dispose={null} />
-      <primitive object={players.root} dispose={null} />
-      <primitive object={kite.root} dispose={null} />
+      <primitive object={cast.players.root} dispose={null} />
+      <primitive object={cast.kite.root} dispose={null} />
       <primitive object={sun} />
       <primitive object={sun.target} />
       <EffectComposer multisampling={0}>
@@ -84,7 +108,7 @@ const Scene = ({ onReady }: { onReady: () => void }) => {
   );
 };
 
-export const KiteShort = () => {
+export const KiteShort = ({ edition = "preview" }: { edition?: Edition }) => {
   const { width, height } = useVideoConfig();
   const composerReady = useRef(false);
   const onReady = useCallback(() => { composerReady.current = true; }, []);
@@ -99,7 +123,7 @@ export const KiteShort = () => {
         camera={{ fov: 37, near: .15, far: 70 }}
         isSceneReady={() => composerReady.current}
       >
-        <Scene onReady={onReady} />
+        <Scene onReady={onReady} edition={edition} />
       </ReadyThreeCanvas>
     </AbsoluteFill>
   );

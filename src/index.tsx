@@ -5,6 +5,8 @@ import { BridgeShort, BRIDGE_FRAMES } from "./videos/bridge/Bridge";
 import { KiteShort } from "./videos/kite/KiteShort";
 import { KITE_FPS, KITE_FRAMES } from "./videos/kite/story";
 
+import { FPS as CONTINUITY_FPS, FRAMES as CONTINUITY_FRAMES } from "./videos/kite/continuity/story";
+
 const Root = () => (
   <>
     <Composition
@@ -28,6 +30,15 @@ const Root = () => (
       component={KiteShort}
       durationInFrames={KITE_FRAMES}
       fps={KITE_FPS}
+      width={540}
+      height={960}
+    />
+    <Composition
+      id="LayangLayangPulang15"
+      component={KiteShort}
+      defaultProps={{ edition: "continuity" as const }}
+      durationInFrames={CONTINUITY_FRAMES}
+      fps={CONTINUITY_FPS}
       width={540}
       height={960}
     />
