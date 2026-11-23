@@ -104,6 +104,13 @@ ffmpeg -i out/kite-continuity/picture.mp4 -i out/kite-continuity/audio/mix.wav \
 
 This render uses 540 × 960 at 30 fps and SwiftShader. The soundtrack uses local eSpeak NG with the Indonesian voice and a synthesized score, footsteps, gusts and reel sounds. Browser and eSpeak override options are the same as for the 10-second version.
 
+To check the full export for frozen frames, unexpected cuts, and audio levels, run the upstream QA helper. Generate its shot metadata from the composition timeline so the three planned cuts are accounted for:
+
+```sh
+node --input-type=module -e 'import { SHOTS } from "./src/videos/kite/continuity/story.ts"; console.log(JSON.stringify({ shots: SHOTS.map((shot, i) => ({ ...shot, id: i + 1 })) }));' > out/kite-continuity/shots.json
+python templates/scripts/short_qa.py out/kite-continuity/layang-layang-pulang-15s.mp4 out/kite-continuity/qa out/kite-continuity/shots.json
+```
+
 ### Quick render with character movement and narration
 
 On Linux or Codex Cloud, have Node.js 24/npm, Bash, Python 3.12 with `venv`, FFmpeg/ffprobe, and eSpeak NG with its Indonesian (`id`) voice. Use installed Chromium when browser downloads are restricted. From a fresh checkout:
